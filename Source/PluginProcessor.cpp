@@ -12,7 +12,7 @@ static juce::AudioProcessorValueTreeState::ParameterLayout makeParams() {
     p.push_back(std::make_unique<AudioParameterFloat>("wave", "Wave (0=saw, 1=square)", 0.f, 1.f, 0.f));
     p.push_back(std::make_unique<AudioParameterBool>("sequencer", "Host Sync Sequencer", true));
     p.push_back(std::make_unique<AudioParameterBool>("playing", "Pattern Play", true));
-    p.push_back(std::make_unique<AudioParameterFloat>("tempo", "Internal Tempo", 40.f, 240.f, 120.f));
+    p.push_back(std::make_unique<AudioParameterInt>("tempo", "Internal Tempo", 40, 240, 120));
     for (int i = 0; i < 16; ++i) {
         auto n = juce::String(i + 1);
         p.push_back(std::make_unique<AudioParameterInt>("step" + n, "Step " + n + " Note (0=rest)", 0, 24, (i % 4 == 0) ? 12 : 0));

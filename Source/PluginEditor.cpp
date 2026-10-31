@@ -138,8 +138,8 @@ void Acid303AudioProcessorEditor::resized(){
     int whiteIndex=0;
     for(int k=0;k<24;++k){
         const int pc=k%12; const bool black=pc==1 || pc==3 || pc==6 || pc==8 || pc==10;
-        if(!black) { pianoKeys[k].setBounds(198+whiteIndex*37,554,35,122); ++whiteIndex; }
-        else pianoKeys[k].setBounds(198+whiteIndex*37-19,554,36,74);
+        if(!black) { pianoKeys[k].setBounds(198+whiteIndex*35,554,35,122); ++whiteIndex; }
+        else pianoKeys[k].setBounds(198+whiteIndex*35-36/2,554,36,74);
     }
     for(int k=0;k<24;++k){ const int pc=k%12; if(pc==1 || pc==3 || pc==6 || pc==8 || pc==10) pianoKeys[k].toFront(false); }
     stepAccent.setBounds(648,484,110,28);
