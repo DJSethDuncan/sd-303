@@ -14,11 +14,13 @@ public:
 private:
     Acid303AudioProcessor& proc;
     SD303LookAndFeel panelLook;
-    juce::Slider cutoff, resonance, env, decay, accent, wave, tempo, note;
+    juce::Slider cutoff, resonance, env, decay, accent, wave, tempo;
     juce::ToggleButton sequencer {"HOST TEMPO"}, stepAccent {"ACCENT"}, slide {"SLIDE / TIE"};
     juce::TextButton playing {"RUN / STOP"};
     juce::TextButton restart {"RESET"};
     juce::TextButton steps[16];
+    juce::TextButton pianoKeys[24];
+    juce::TextButton rest {"REST"};
     juce::Label title, stepLabel;
     using Attachment=juce::AudioProcessorValueTreeState::SliderAttachment;
     std::unique_ptr<Attachment> cutoffA,resA,envA,decayA,accentA,waveA,tempoA;
@@ -28,5 +30,7 @@ private:
     void timerCallback() override;
     void updateStepColours();
     void updateStepControls();
+    void setStepNote(int value);
+    void updateKeyboard();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Acid303AudioProcessorEditor)
 };

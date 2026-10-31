@@ -13,7 +13,7 @@ void SD303LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int w, 
 }
 
 Acid303AudioProcessorEditor::Acid303AudioProcessorEditor(Acid303AudioProcessor& p) : AudioProcessorEditor(p), proc(p) {
-    setSize(960, 560);
+    setSize(960, 710);
     setLookAndFeel(&panelLook);
     title.setText("SD-303", juce::dontSendNotification); title.setJustificationType(juce::Justification::centred); title.setFont(juce::Font(30.f, juce::Font::bold)); addAndMakeVisible(title);
     stepLabel.setJustificationType(juce::Justification::centredLeft); addAndMakeVisible(stepLabel);
@@ -35,9 +35,16 @@ Acid303AudioProcessorEditor::Acid303AudioProcessorEditor(Acid303AudioProcessor& 
     playingA=std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(proc.state,"playing",playing);
     stepLabel.setColour(juce::Label::textColourId,juce::Colour(0xff252728));
     for(auto* b : {&sequencer,&stepAccent,&slide}) { b->setColour(juce::ToggleButton::textColourId,juce::Colour(0xff28292a)); b->setColour(juce::ToggleButton::tickColourId,juce::Colour(0xffdb682e)); }
-    note.setRange(0,24,1); note.setSliderStyle(juce::Slider::IncDecButtons); note.setTextBoxStyle(juce::Slider::TextBoxBelow,false,70,22); addAndMakeVisible(note);
+    for (int k=0;k<24;++k) {
+        auto& key=pianoKeys[k];
+        key.setButtonText(juce::MidiMessage::getMidiNoteName(36+k,true,true,4));
+        key.setConnectedEdges(juce::Button::ConnectedOnLeft | juce::Button::ConnectedOnRight);
+        key.onClick=[this,k]{ setStepNote(k+1); };
+        addAndMakeVisible(key);
+    }
+    rest.onClick=[this]{ setStepNote(0); };
+    addAndMakeVisible(rest);
     for(int i=0;i<16;++i){ steps[i].setButtonText(juce::String(i+1)); steps[i].setColour(juce::TextButton::textColourOffId,juce::Colour(0xff28292a)); steps[i].setColour(juce::TextButton::textColourOnId,juce::Colour(0xff28292a)); steps[i].onClick=[this,i]{ selectedStep=i; updateStepControls(); }; addAndMakeVisible(steps[i]); }
-    note.onValueChange=[this]{ auto* param=proc.state.getParameter("step"+juce::String(selectedStep+1)); if(param) param->setValueNotifyingHost(param->convertTo0to1((float)note.getValue())); };
     stepAccent.onClick=[this]{ auto* param=proc.state.getParameter("accent"+juce::String(selectedStep+1)); if(param) param->setValueNotifyingHost(stepAccent.getToggleState()?1.f:0.f); };
     slide.onClick=[this]{ auto* param=proc.state.getParameter("slide"+juce::String(selectedStep+1)); if(param) param->setValueNotifyingHost(slide.getToggleState()?1.f:0.f); };
     updateStepControls();
@@ -46,6 +53,7 @@ Acid303AudioProcessorEditor::Acid303AudioProcessorEditor(Acid303AudioProcessor& 
 void Acid303AudioProcessorEditor::timerCallback(){
     displayedPlayingStep=proc.state.getRawParameterValue("playing")->load()>.5f ? proc.getPlayingStep() : -1;
     updateStepColours();
+    updateKeyboard();
     repaint(34,348,124,24);
 }
 void Acid303AudioProcessorEditor::updateStepColours(){
@@ -60,17 +68,34 @@ void Acid303AudioProcessorEditor::updateStepColours(){
 }
 void Acid303AudioProcessorEditor::updateStepControls(){
     auto suffix=juce::String(selectedStep+1);
-    note.setValue(proc.state.getRawParameterValue("step"+suffix)->load(),juce::dontSendNotification);
     stepAccent.setToggleState(proc.state.getRawParameterValue("accent"+suffix)->load()>.5f,juce::dontSendNotification);
     slide.setToggleState(proc.state.getRawParameterValue("slide"+suffix)->load()>.5f,juce::dontSendNotification);
-    stepLabel.setText("STEP "+suffix+"   NOTE (0 = REST, 1–24 = PITCH)",juce::dontSendNotification);
+    updateKeyboard();
     updateStepColours();
+}
+void Acid303AudioProcessorEditor::setStepNote(int value){
+    if (auto* param=proc.state.getParameter("step"+juce::String(selectedStep+1))) {
+        param->beginChangeGesture();
+        param->setValueNotifyingHost(param->convertTo0to1((float)value));
+        param->endChangeGesture();
+    }
+    updateStepControls();
+}
+void Acid303AudioProcessorEditor::updateKeyboard(){
+    const int value=(int)proc.state.getRawParameterValue("step"+juce::String(selectedStep+1))->load();
+    stepLabel.setText("STEP "+juce::String(selectedStep+1)+"   /   "+(value==0 ? juce::String("REST") : juce::MidiMessage::getMidiNoteName(35+value,true,true,4)),juce::dontSendNotification);
+    for(int k=0;k<24;++k){
+        const int pc=k%12; const bool black=pc==1 || pc==3 || pc==6 || pc==8 || pc==10;
+        pianoKeys[k].setColour(juce::TextButton::buttonColourId,value==k+1 ? juce::Colour(0xffd7a653) : black ? juce::Colour(0xff202628) : juce::Colour(0xffedece3));
+        pianoKeys[k].setColour(juce::TextButton::textColourOffId,black && value!=k+1 ? juce::Colours::white : juce::Colour(0xff202525));
+    }
+    rest.setColour(juce::TextButton::buttonColourId,value==0 ? juce::Colour(0xffd7a653) : juce::Colour(0xff42494a));
 }
 void Acid303AudioProcessorEditor::paint(juce::Graphics& g){
     g.fillAll(juce::Colour(0xff25282a));
-    juce::ColourGradient metal(juce::Colour(0xffe0e2dc),0,10,juce::Colour(0xffa6afab),0,550,false);
-    g.setGradientFill(metal); g.fillRoundedRectangle(8,8,944,544,12);
-    g.setColour(juce::Colour(0xff777f7d)); g.drawRoundedRectangle(12,12,936,536,10,1);
+    juce::ColourGradient metal(juce::Colour(0xffe0e2dc),0,10,juce::Colour(0xffa6afab),0,700,false);
+    g.setGradientFill(metal); g.fillRoundedRectangle(8,8,944,694,12);
+    g.setColour(juce::Colour(0xff777f7d)); g.drawRoundedRectangle(12,12,936,686,10,1);
     g.setColour(juce::Colour(0xff242b2b)); g.setFont(juce::Font(27.f,juce::Font::bold));
     g.drawText("Seth Duncan",28,30,210,40,juce::Justification::centredLeft);
     g.setFont(juce::Font(13.f,juce::Font::bold)); g.drawText("BASS LINE",28,78,210,24,juce::Justification::centredLeft);
@@ -91,7 +116,10 @@ void Acid303AudioProcessorEditor::paint(juce::Graphics& g){
     g.setColour(juce::Colour(0xff303635)); g.setFont(juce::Font(11.f,juce::Font::bold));
     g.drawText(running ? "RUNNING" : "STOPPED",65,348,88,24,juce::Justification::centredLeft);
     g.setFont(juce::Font(12.f,juce::Font::bold)); g.drawText("RUN / STOP",34,448,124,22,juce::Justification::centred);
-    for(auto point : {juce::Point<int>(20,20),juce::Point<int>(940,20),juce::Point<int>(20,540),juce::Point<int>(940,540)}) {
+    g.setColour(juce::Colour(0xff303635)); g.setFont(juce::Font(11.f,juce::Font::bold));
+    g.drawText("PITCH ENTRY  /  SELECT A STEP ABOVE, THEN CLICK A KEY",198,520,710,22,juce::Justification::centredLeft);
+    g.setColour(juce::Colour(0xff222728)); g.fillRoundedRectangle(190,546,744,138,4);
+    for(auto point : {juce::Point<int>(20,20),juce::Point<int>(940,20),juce::Point<int>(20,690),juce::Point<int>(940,690)}) {
         g.setColour(juce::Colour(0xff737b78)); g.fillEllipse((float)point.x-3,(float)point.y-3,6,6);
         g.setColour(juce::Colour(0xff424a47)); g.drawLine((float)point.x-2,(float)point.y,(float)point.x+2,(float)point.y,1);
     }
@@ -106,7 +134,14 @@ void Acid303AudioProcessorEditor::resized(){
     playing.setBounds(42,374,108,66);
     for(int i=0;i<16;++i) steps[i].setBounds(200+(i%8)*90,373+(i/8)*44,78,34);
     stepLabel.setBounds(198,478,300,22);
-    note.setBounds(512,476,110,56);
+    rest.setBounds(512,478,100,34);
+    int whiteIndex=0;
+    for(int k=0;k<24;++k){
+        const int pc=k%12; const bool black=pc==1 || pc==3 || pc==6 || pc==8 || pc==10;
+        if(!black) { pianoKeys[k].setBounds(198+whiteIndex*52,554,50,122); ++whiteIndex; }
+        else pianoKeys[k].setBounds(198+whiteIndex*52-16,554,30,74);
+    }
+    for(int k=0;k<24;++k){ const int pc=k%12; if(pc==1 || pc==3 || pc==6 || pc==8 || pc==10) pianoKeys[k].toFront(false); }
     stepAccent.setBounds(648,484,110,28);
     slide.setBounds(775,484,145,28);
 }
