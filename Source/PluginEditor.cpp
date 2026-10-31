@@ -63,7 +63,7 @@ void Acid303AudioProcessorEditor::updateStepColours(){
         const bool hasNote=proc.state.getRawParameterValue("step"+juce::String(i+1))->load()>0;
         steps[i].setColour(juce::TextButton::buttonColourId,active ? juce::Colour(0xfff04432) : selected ? juce::Colour(0xffd2ac65) : hasNote ? juce::Colour(0xff585d5c) : juce::Colour(0xff363a3c));
         steps[i].setColour(juce::TextButton::textColourOffId,selected && !active ? juce::Colour(0xff202525) : juce::Colours::white);
-        steps[i].setButtonText((active ? "> " : "")+juce::String(i+1));
+        steps[i].setButtonText(juce::String(i+1));
     }
 }
 void Acid303AudioProcessorEditor::updateStepControls(){
@@ -138,8 +138,8 @@ void Acid303AudioProcessorEditor::resized(){
     int whiteIndex=0;
     for(int k=0;k<24;++k){
         const int pc=k%12; const bool black=pc==1 || pc==3 || pc==6 || pc==8 || pc==10;
-        if(!black) { pianoKeys[k].setBounds(198+whiteIndex*52,554,50,122); ++whiteIndex; }
-        else pianoKeys[k].setBounds(198+whiteIndex*52-16,554,30,74);
+        if(!black) { pianoKeys[k].setBounds(198+whiteIndex*37,554,35,122); ++whiteIndex; }
+        else pianoKeys[k].setBounds(198+whiteIndex*37-19,554,36,74);
     }
     for(int k=0;k<24;++k){ const int pc=k%12; if(pc==1 || pc==3 || pc==6 || pc==8 || pc==10) pianoKeys[k].toFront(false); }
     stepAccent.setBounds(648,484,110,28);
