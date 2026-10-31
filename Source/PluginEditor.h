@@ -1,6 +1,10 @@
 #pragma once
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+class SD303LookAndFeel : public juce::LookAndFeel_V4 {
+public:
+    void drawRotarySlider(juce::Graphics&, int, int, int, int, float, float, float, juce::Slider&) override;
+};
 class Acid303AudioProcessorEditor : public juce::AudioProcessorEditor {
 public:
     explicit Acid303AudioProcessorEditor(Acid303AudioProcessor&);
@@ -8,6 +12,7 @@ public:
     void resized() override;
 private:
     Acid303AudioProcessor& proc;
+    SD303LookAndFeel panelLook;
     juce::Slider cutoff, resonance, env, decay, accent, wave, tempo, note;
     juce::ToggleButton sequencer {"HOST SYNC"}, playing {"RUN PATTERN"}, stepAccent {"ACCENT"}, slide {"SLIDE / TIE"};
     juce::TextButton steps[16];
