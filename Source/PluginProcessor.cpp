@@ -38,6 +38,7 @@ void Acid303AudioProcessor::processBlock(juce::AudioBuffer<float>& b, juce::Midi
     if (sync && hostPlaying) ppq=hostPpq; else ppq=beatPosition;
     const double stepBeats=.25;
     const double inc=bpm/(60.0*sampleRate);
+    if (restartRequested.exchange(false)) { beatPosition=0.0; currentStep=-1; voice.note=-1; voice.env=0.0f; }
     auto event=midi.begin();
     for (int i=0;i<b.getNumSamples();++i) {
         if (sync && playing) {

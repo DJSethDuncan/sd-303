@@ -22,7 +22,10 @@ Acid303AudioProcessorEditor::Acid303AudioProcessorEditor(Acid303AudioProcessor& 
     const char* ids[]={"cutoff","resonance","env","decay","accent","wave","tempo"};
     std::unique_ptr<Attachment>* at[]={&cutoffA,&resA,&envA,&decayA,&accentA,&waveA,&tempoA};
     for(int i=0;i<7;++i){ auto* s=sliders[i]; s->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag); s->setTextBoxStyle(juce::Slider::TextBoxBelow,false,70,18); s->setLookAndFeel(&panelLook); s->setColour(juce::Slider::textBoxTextColourId,juce::Colour(0xfff2ede0)); s->setColour(juce::Slider::textBoxBackgroundColourId,juce::Colour(0xff393a3c)); s->setColour(juce::Slider::textBoxOutlineColourId,juce::Colour(0xff696a69)); s->setName(names[i]); addAndMakeVisible(*s); *at[i]=std::make_unique<Attachment>(proc.state,ids[i],*s); }
-    addAndMakeVisible(sequencer); addAndMakeVisible(playing); addAndMakeVisible(stepAccent); addAndMakeVisible(slide);
+    addAndMakeVisible(sequencer); addAndMakeVisible(playing); addAndMakeVisible(restart); addAndMakeVisible(stepAccent); addAndMakeVisible(slide);
+    restart.onClick=[this]{ proc.requestPatternRestart(); };
+    playing.setTooltip("Start or stop the built-in pattern. It runs in Standalone without a DAW transport.");
+    sequencer.setTooltip("Follow host tempo when running in a DAW; otherwise use the Tempo control.");
     seqA=std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(proc.state,"sequencer",sequencer);
     playingA=std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(proc.state,"playing",playing);
     for(auto* b : {&sequencer,&playing,&stepAccent,&slide}) { b->setColour(juce::ToggleButton::textColourId,juce::Colour(0xff28292a)); b->setColour(juce::ToggleButton::tickColourId,juce::Colour(0xffdb682e)); }
@@ -55,7 +58,7 @@ void Acid303AudioProcessorEditor::paint(juce::Graphics& g){
     g.drawText("TEMPO",630,169,112,18,juce::Justification::centred);
 }
 void Acid303AudioProcessorEditor::resized(){
-    title.setBounds(0,0,1,1); sequencer.setBounds(35,78,145,24); playing.setBounds(190,78,145,24); tempo.setBounds(630,65,112,112);
+    title.setBounds(0,0,1,1); sequencer.setBounds(35,78,145,24); playing.setBounds(190,78,145,30); restart.setBounds(348,78,95,30); restart.setColour(juce::TextButton::buttonColourId,juce::Colour(0xffdb682e)); restart.setColour(juce::TextButton::textColourOffId,juce::Colours::white); tempo.setBounds(630,65,112,112);
     for(int i=0;i<16;++i) steps[i].setBounds(34+(i%8)*88,111+(i/8)*39,74,30);
     stepLabel.setBounds(35,190,285,24); note.setBounds(320,178,115,43); stepAccent.setBounds(455,190,100,24); slide.setBounds(565,190,160,24);
     juce::Slider* s[]={&cutoff,&resonance,&env,&decay,&accent,&wave}; for(int i=0;i<6;++i)s[i]->setBounds(22+i*120,247,112,132);

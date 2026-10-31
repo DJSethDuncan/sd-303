@@ -14,7 +14,8 @@ private:
     Acid303AudioProcessor& proc;
     SD303LookAndFeel panelLook;
     juce::Slider cutoff, resonance, env, decay, accent, wave, tempo, note;
-    juce::ToggleButton sequencer {"HOST SYNC"}, playing {"RUN PATTERN"}, stepAccent {"ACCENT"}, slide {"SLIDE / TIE"};
+    juce::ToggleButton sequencer {"HOST TEMPO"}, playing {"PLAY / STOP"}, stepAccent {"ACCENT"}, slide {"SLIDE / TIE"};
+    juce::TextButton restart {"RESET"};
     juce::TextButton steps[16];
     juce::Label title, stepLabel;
     using Attachment=juce::AudioProcessorValueTreeState::SliderAttachment;
