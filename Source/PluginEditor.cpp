@@ -41,6 +41,22 @@ Acid303AudioProcessorEditor::Acid303AudioProcessorEditor(Acid303AudioProcessor& 
     stepAccent.onClick=[this]{ auto* param=proc.state.getParameter("accent"+juce::String(selectedStep+1)); if(param) param->setValueNotifyingHost(stepAccent.getToggleState()?1.f:0.f); };
     slide.onClick=[this]{ auto* param=proc.state.getParameter("slide"+juce::String(selectedStep+1)); if(param) param->setValueNotifyingHost(slide.getToggleState()?1.f:0.f); };
     updateStepControls();
+    startTimerHz(30);
+}
+void Acid303AudioProcessorEditor::timerCallback(){
+    displayedPlayingStep=proc.state.getRawParameterValue("playing")->load()>.5f ? proc.getPlayingStep() : -1;
+    updateStepColours();
+    repaint(34,348,124,24);
+}
+void Acid303AudioProcessorEditor::updateStepColours(){
+    for(int i=0;i<16;++i){
+        const bool active=i==displayedPlayingStep;
+        const bool selected=i==selectedStep;
+        const bool hasNote=proc.state.getRawParameterValue("step"+juce::String(i+1))->load()>0;
+        steps[i].setColour(juce::TextButton::buttonColourId,active ? juce::Colour(0xfff04432) : selected ? juce::Colour(0xffd2ac65) : hasNote ? juce::Colour(0xff585d5c) : juce::Colour(0xff363a3c));
+        steps[i].setColour(juce::TextButton::textColourOffId,selected && !active ? juce::Colour(0xff202525) : juce::Colours::white);
+        steps[i].setButtonText((active ? "> " : "")+juce::String(i+1));
+    }
 }
 void Acid303AudioProcessorEditor::updateStepControls(){
     auto suffix=juce::String(selectedStep+1);
@@ -48,7 +64,7 @@ void Acid303AudioProcessorEditor::updateStepControls(){
     stepAccent.setToggleState(proc.state.getRawParameterValue("accent"+suffix)->load()>.5f,juce::dontSendNotification);
     slide.setToggleState(proc.state.getRawParameterValue("slide"+suffix)->load()>.5f,juce::dontSendNotification);
     stepLabel.setText("STEP "+suffix+"   NOTE (0 = REST, 1–24 = PITCH)",juce::dontSendNotification);
-    for(int i=0;i<16;++i){ int v=(int)proc.state.getRawParameterValue("step"+juce::String(i+1))->load(); steps[i].setColour(juce::TextButton::buttonColourId,i==selectedStep?juce::Colour(0xffa73730):(v?juce::Colour(0xff585d5c):juce::Colour(0xff363a3c))); steps[i].setColour(juce::TextButton::textColourOffId,juce::Colours::white); }
+    updateStepColours();
 }
 void Acid303AudioProcessorEditor::paint(juce::Graphics& g){
     g.fillAll(juce::Colour(0xff25282a));
@@ -69,6 +85,11 @@ void Acid303AudioProcessorEditor::paint(juce::Graphics& g){
     g.setColour(juce::Colour(0xff222728)); g.fillRoundedRectangle(184,340,748,126,5);
     g.setColour(juce::Colour(0xffedefe6)); g.setFont(juce::Font(11.f,juce::Font::bold)); g.drawText("PATTERN STEPS",200,346,250,18,juce::Justification::centredLeft);
     g.setColour(juce::Colour(0xff303635)); g.drawRect(26,340,140,190,1);
+    const bool running=displayedPlayingStep>=0;
+    g.setColour(running ? juce::Colour(0xffff3828) : juce::Colour(0xff58332f));
+    g.fillEllipse(46,354,12,12);
+    g.setColour(juce::Colour(0xff303635)); g.setFont(juce::Font(11.f,juce::Font::bold));
+    g.drawText(running ? "RUNNING" : "STOPPED",65,348,88,24,juce::Justification::centredLeft);
     g.setFont(juce::Font(12.f,juce::Font::bold)); g.drawText("RUN / STOP",34,448,124,22,juce::Justification::centred);
     for(auto point : {juce::Point<int>(20,20),juce::Point<int>(940,20),juce::Point<int>(20,540),juce::Point<int>(940,540)}) {
         g.setColour(juce::Colour(0xff737b78)); g.fillEllipse((float)point.x-3,(float)point.y-3,6,6);

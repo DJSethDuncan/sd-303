@@ -23,11 +23,13 @@ public:
     void setStateInformation(const void*, int) override;
     juce::AudioProcessorValueTreeState state;
     void requestPatternRestart() { restartRequested.store(true); }
+    int getPlayingStep() const { return playingStep.load(std::memory_order_relaxed); }
 private:
     struct Voice { double phase=0, subPhase=0; float env=0, filter=0, resonanceState=0; int note=-1; } voice;
     double sampleRate=44100.0, beatPosition=0.0;
     int currentStep=-1;
     std::atomic<bool> restartRequested { false };
+    std::atomic<int> playingStep { -1 };
     juce::Random random;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Acid303AudioProcessor)
 };

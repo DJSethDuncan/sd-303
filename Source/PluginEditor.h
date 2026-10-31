@@ -5,10 +5,10 @@ class SD303LookAndFeel : public juce::LookAndFeel_V4 {
 public:
     void drawRotarySlider(juce::Graphics&, int, int, int, int, float, float, float, juce::Slider&) override;
 };
-class Acid303AudioProcessorEditor : public juce::AudioProcessorEditor {
+class Acid303AudioProcessorEditor : public juce::AudioProcessorEditor, private juce::Timer {
 public:
     explicit Acid303AudioProcessorEditor(Acid303AudioProcessor&);
-    ~Acid303AudioProcessorEditor() override { setLookAndFeel(nullptr); }
+    ~Acid303AudioProcessorEditor() override { stopTimer(); setLookAndFeel(nullptr); }
     void paint(juce::Graphics&) override;
     void resized() override;
 private:
@@ -24,6 +24,9 @@ private:
     std::unique_ptr<Attachment> cutoffA,resA,envA,decayA,accentA,waveA,tempoA;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> seqA,playingA;
     int selectedStep=0;
+    int displayedPlayingStep=-1;
+    void timerCallback() override;
+    void updateStepColours();
     void updateStepControls();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Acid303AudioProcessorEditor)
 };

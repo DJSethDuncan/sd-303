@@ -22,7 +22,7 @@ static juce::AudioProcessorValueTreeState::ParameterLayout makeParams() {
     return {p.begin(), p.end()};
 }
 Acid303AudioProcessor::Acid303AudioProcessor() : AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo(), true)), state(*this, nullptr, "PARAMETERS", makeParams()) {}
-void Acid303AudioProcessor::prepareToPlay(double sr, int) { sampleRate=sr; voice={}; currentStep=-1; }
+void Acid303AudioProcessor::prepareToPlay(double sr, int) { sampleRate=sr; voice={}; currentStep=-1; playingStep.store(-1, std::memory_order_relaxed); }
 void Acid303AudioProcessor::processBlock(juce::AudioBuffer<float>& b, juce::MidiBuffer& midi) {
     juce::ScopedNoDenormals noDenormals; b.clear();
     auto* cutoff=state.getRawParameterValue("cutoff"); auto* res=state.getRawParameterValue("resonance");
@@ -32,16 +32,16 @@ void Acid303AudioProcessor::processBlock(juce::AudioBuffer<float>& b, juce::Midi
     if (auto* ph=getPlayHead()) if (auto pos=ph->getPosition()) { if (auto t=pos->getBpm()) bpm=*t; if (auto q=pos->getPpqPosition()) hostPpq=*q; hostPlaying=pos->getIsPlaying(); }
     const bool sync=state.getRawParameterValue("sequencer")->load() > .5f;
     const bool patternOn=state.getRawParameterValue("playing")->load() > .5f;
-    if (!sync) bpm=state.getRawParameterValue("tempo")->load();
+    if (!sync || !hostPlaying) bpm=state.getRawParameterValue("tempo")->load();
     // Run from the internal PPQ clock while the host is stopped (including standalone); follow host PPQ on transport.
     playing=patternOn;
     if (sync && hostPlaying) ppq=hostPpq; else ppq=beatPosition;
     const double stepBeats=.25;
     const double inc=bpm/(60.0*sampleRate);
-    if (restartRequested.exchange(false)) { beatPosition=0.0; currentStep=-1; voice.note=-1; voice.env=0.0f; }
+    if (restartRequested.exchange(false)) { beatPosition=0.0; ppq=0.0; currentStep=-1; voice.note=-1; voice.env=0.0f; }
     auto event=midi.begin();
     for (int i=0;i<b.getNumSamples();++i) {
-        if (sync && playing) {
+        if (playing) {
             int step=(int)std::floor((ppq + inc*i)/stepBeats);
             if (step!=currentStep) { currentStep=step; int s=((step%16)+16)%16; auto idx=juce::String(s+1); int note=(int)state.getRawParameterValue("step"+idx)->load();
                 bool slide=state.getRawParameterValue("slide"+idx)->load()>.5f;
@@ -70,7 +70,8 @@ void Acid303AudioProcessor::processBlock(juce::AudioBuffer<float>& b, juce::Midi
         }
         for(int ch=0;ch<b.getNumChannels();++ch) b.setSample(ch,i,out);
     }
-    if (sync && playing) beatPosition=ppq+inc*b.getNumSamples(); else beatPosition+=inc*b.getNumSamples();
+    playingStep.store(playing && currentStep != -1 ? ((currentStep % 16) + 16) % 16 : -1, std::memory_order_relaxed);
+    if (playing) beatPosition=ppq+inc*b.getNumSamples();
 }
 juce::AudioProcessorEditor* Acid303AudioProcessor::createEditor(){ return new Acid303AudioProcessorEditor(*this); }
 void Acid303AudioProcessor::getStateInformation(juce::MemoryBlock& d){ auto x=state.copyState(); std::unique_ptr<juce::XmlElement> xml(x.createXml()); copyXmlToBinary(*xml,d); }
