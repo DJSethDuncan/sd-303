@@ -8,13 +8,15 @@ public:
 class Acid303AudioProcessorEditor : public juce::AudioProcessorEditor {
 public:
     explicit Acid303AudioProcessorEditor(Acid303AudioProcessor&);
+    ~Acid303AudioProcessorEditor() override { setLookAndFeel(nullptr); }
     void paint(juce::Graphics&) override;
     void resized() override;
 private:
     Acid303AudioProcessor& proc;
     SD303LookAndFeel panelLook;
     juce::Slider cutoff, resonance, env, decay, accent, wave, tempo, note;
-    juce::ToggleButton sequencer {"HOST TEMPO"}, playing {"PLAY / STOP"}, stepAccent {"ACCENT"}, slide {"SLIDE / TIE"};
+    juce::ToggleButton sequencer {"HOST TEMPO"}, stepAccent {"ACCENT"}, slide {"SLIDE / TIE"};
+    juce::TextButton playing {"RUN / STOP"};
     juce::TextButton restart {"RESET"};
     juce::TextButton steps[16];
     juce::Label title, stepLabel;
