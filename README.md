@@ -20,7 +20,8 @@ The VST3 bundle is produced under `build/SD303_artefacts/Release/VST3/` (or the 
 
 - Monophonic saw/square oscillator and resonant low-pass filter
 - MIDI note input
-- Host tempo/transport following for a built-in 16th-note pattern
-- Automatable cutoff, resonance, envelope modulation, decay, accent, waveform, and host-sync parameters
+- Editable 16-step pattern with per-step note/rest, accent, and slide/tie controls
+- Host tempo/transport following, plus internal tempo mode
+- Automatable cutoff, resonance, envelope modulation, decay, accent, waveform, tempo, and step parameters
 
 This is an initial acid-synth prototype, not an exact TB-303 emulation. Roland and TB-303 are trademarks of their respective owners; this project is unaffiliated.

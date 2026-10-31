@@ -7,12 +7,15 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
 private:
-    Acid303AudioProcessor& processor;
-    juce::Slider cutoff, resonance, env, decay, accent, wave;
-    juce::ToggleButton sequencer {"HOST SYNC"};
-    juce::Label title;
+    Acid303AudioProcessor& proc;
+    juce::Slider cutoff, resonance, env, decay, accent, wave, tempo, note;
+    juce::ToggleButton sequencer {"HOST SYNC"}, playing {"RUN PATTERN"}, stepAccent {"ACCENT"}, slide {"SLIDE / TIE"};
+    juce::TextButton steps[16];
+    juce::Label title, stepLabel;
     using Attachment=juce::AudioProcessorValueTreeState::SliderAttachment;
-    std::unique_ptr<Attachment> cutoffA,resA,envA,decayA,accentA,waveA;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> seqA;
+    std::unique_ptr<Attachment> cutoffA,resA,envA,decayA,accentA,waveA,tempoA;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> seqA,playingA;
+    int selectedStep=0;
+    void updateStepControls();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Acid303AudioProcessorEditor)
 };
