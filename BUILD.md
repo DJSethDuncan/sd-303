@@ -11,9 +11,17 @@
 Run from the `sd-303` project directory:
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 cmake --build build --config Release -j4
 ```
+
+The macOS default is a universal binary (Apple Silicon and Intel). Explicitly specifying the architectures also updates an older Intel-only CMake cache. An Intel-only plugin cannot load in native Apple Silicon Ableton, even if built successfully under Rosetta. Verify with:
+
+```sh
+lipo -archs "build/Acid303_artefacts/Release/VST3/SD-303.vst3/Contents/MacOS/SD-303"
+```
+
+Both `arm64` and `x86_64` should be listed.
 
 ## Run without a DAW
 

@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
+# Set before project() so Rosetta-hosted CMake does not silently produce Intel-only plugins.
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "macOS target architectures")
+endif()
 project(Acid303 VERSION 1.0.0)
 
 include(FetchContent)

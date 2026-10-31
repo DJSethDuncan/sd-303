@@ -10,7 +10,7 @@ A JUCE-based, monophonic acid synth VST3 with a host-tempo-synced 16-step patter
 Requires Xcode Command Line Tools, CMake 3.22+, Git, and internet access for JUCE download.
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 cmake --build build --config Release
 ```
 
