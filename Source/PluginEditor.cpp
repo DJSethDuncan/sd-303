@@ -1,6 +1,6 @@
 #include "PluginEditor.h"
 Acid303AudioProcessorEditor::Acid303AudioProcessorEditor(Acid303AudioProcessor& p):AudioProcessorEditor(p),processor(p){
-    setSize(560,330); title.setText("ACID 303",juce::dontSendNotification); title.setJustificationType(juce::Justification::centred); title.setFont(juce::Font(30.f,juce::Font::bold)); addAndMakeVisible(title);
+    setSize(560,330); title.setText("SD-303",juce::dontSendNotification); title.setJustificationType(juce::Justification::centred); title.setFont(juce::Font(30.f,juce::Font::bold)); addAndMakeVisible(title);
     juce::Slider* sliders[]={&cutoff,&resonance,&env,&decay,&accent,&wave}; const char* names[]={"CUTOFF","RESONANCE","ENV MOD","DECAY","ACCENT","WAVE"}; const char* ids[]={"cutoff","resonance","env","decay","accent","wave"};
     std::unique_ptr<Attachment>* at[]={&cutoffA,&resA,&envA,&decayA,&accentA,&waveA};
     for(int i=0;i<6;++i){ auto* s=sliders[i]; s->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag); s->setTextBoxStyle(juce::Slider::TextBoxBelow,false,72,20); addAndMakeVisible(*s); s->setName(names[i]); *at[i]=std::make_unique<Attachment>(processor.state,ids[i],*s); }

@@ -1,5 +1,8 @@
 # SD-303
 
+**Developer:** Seth Duncan  
+**Plugin:** SD-303
+
 A JUCE-based, monophonic acid synth VST3 with a host-tempo-synced 16-step pattern and automatable sound controls.
 
 ## Build (macOS)

@@ -6,12 +6,12 @@ FetchContent_Declare(JUCE GIT_REPOSITORY https://github.com/juce-framework/JUCE.
 FetchContent_MakeAvailable(JUCE)
 
 juce_add_plugin(Acid303
-    COMPANY_NAME "Open Circuit"
-    BUNDLE_ID com.opencircuit.acid303
-    PLUGIN_MANUFACTURER_CODE OpCi
-    PLUGIN_CODE Ac03
+    COMPANY_NAME "Seth Duncan"
+    BUNDLE_ID com.sethduncan.sd303
+    PLUGIN_MANUFACTURER_CODE SeDu
+    PLUGIN_CODE SD03
     FORMATS VST3 Standalone
-    PRODUCT_NAME "Acid 303"
+    PRODUCT_NAME "SD-303"
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT FALSE
