@@ -28,12 +28,14 @@ void Acid303AudioProcessor::processBlock(juce::AudioBuffer<float>& b, juce::Midi
     auto* cutoff=state.getRawParameterValue("cutoff"); auto* res=state.getRawParameterValue("resonance");
     auto* envAmt=state.getRawParameterValue("env"); auto* decay=state.getRawParameterValue("decay"); auto* accent=state.getRawParameterValue("accent"); auto* wave=state.getRawParameterValue("wave");
     double bpm=120.0, ppq=beatPosition; bool playing=false;
-    bool hostPlaying=false;
-    if (auto* ph=getPlayHead()) if (auto pos=ph->getPosition()) { if (auto t=pos->getBpm()) bpm=*t; if (auto q=pos->getPpqPosition()) ppq=*q; hostPlaying=pos->getIsPlaying(); }
+    bool hostPlaying=false; double hostPpq=beatPosition;
+    if (auto* ph=getPlayHead()) if (auto pos=ph->getPosition()) { if (auto t=pos->getBpm()) bpm=*t; if (auto q=pos->getPpqPosition()) hostPpq=*q; hostPlaying=pos->getIsPlaying(); }
     const bool sync=state.getRawParameterValue("sequencer")->load() > .5f;
     const bool patternOn=state.getRawParameterValue("playing")->load() > .5f;
     if (!sync) bpm=state.getRawParameterValue("tempo")->load();
-    playing=sync ? hostPlaying : patternOn;
+    // Run from the internal PPQ clock while the host is stopped (including standalone); follow host PPQ on transport.
+    playing=patternOn;
+    if (sync && hostPlaying) ppq=hostPpq; else ppq=beatPosition;
     const double stepBeats=.25;
     const double inc=bpm/(60.0*sampleRate);
     auto event=midi.begin();
