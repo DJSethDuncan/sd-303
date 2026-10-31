@@ -14,5 +14,5 @@ Turn the current prototype into a playable, editable TB-303-inspired instrument 
 - Step 1: implemented 16 independently editable note/rest steps, with per-step accent and slide/tie flags persisted as host parameters/state.
 - Step 2: implemented host PPQ/tempo clocking plus an internal-tempo run mode.
 - Step 3: added 16-step selector, selected-step note/rest editor, accent/slide toggles, run/host-sync toggles, and synth controls. The original hardware's full pattern bank/mode workflow is not yet implemented.
-- Step 4: partial first pass. Accent affects output level; slide currently holds/glides state in a basic manner, and the filter remains an approximate feedback low-pass, not a validated diode-ladder model.
-- Step 5: VST3 and Standalone build successfully. Pattern editing/state and transport behavior still need in-host functional testing, and perceptual similarity needs reference-based listening/tuning.
+- Step 4: improved approximation: band-limited saw/square, amplifier/filter envelopes, actual slide portamento, accent level/envelope emphasis, smoothed tone controls, and an 18 dB/oct resonant low-pass (state-variable resonator plus one pole). Not a validated diode-ladder/circuit model.
+- Step 5: VST3 and Standalone build successfully. Offline regressions cover startup/transport, mock host clocking, MIDI, audition, state, value formatting, filter response, extreme sweeps, and keyboard hit-testing. Panel snapshot rendered and visually inspected. Actual DAW testing and reference-based listening/tuning are still needed. See UX-REVIEW.md.

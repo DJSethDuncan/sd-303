@@ -5,7 +5,7 @@ class Acid303AudioProcessor : public juce::AudioProcessor {
 public:
     Acid303AudioProcessor();
     void prepareToPlay(double, int) override;
-    void releaseResources() override {}
+    void releaseResources() override { playingStep.store(-1); }
     void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override { return true; }
@@ -24,12 +24,21 @@ public:
     juce::AudioProcessorValueTreeState state;
     void requestPatternRestart() { restartRequested.store(true); }
     int getPlayingStep() const { return playingStep.load(std::memory_order_relaxed); }
+    void auditionNote(int midiNote) { auditionRequested.store(midiNote); }
 private:
-    struct Voice { double phase=0, subPhase=0; float env=0, filter=0, resonanceState=0; int note=-1; } voice;
+    struct Voice {
+        double phase=0, pitch=36;
+        float env=0, amp=0, ic1=0, ic2=0, pole=0, emphasis=0;
+        int note=36;
+        bool gate=false, glide=false;
+    } voice;
+    std::array<std::atomic<float>*,16> notes{}, accents{}, slides{};
+    std::atomic<float> *cutoffParam{}, *resParam{}, *envParam{}, *decayParam{}, *accentParam{}, *waveParam{}, *volumeParam{};
+    juce::SmoothedValue<float> cutoffSmooth, resSmooth, envSmooth, decaySmooth, accentSmooth, volumeSmooth;
     double sampleRate=44100.0, beatPosition=0.0;
-    int currentStep=-1;
+    int currentStep=-1, auditionSamples=0;
+    bool wasPlaying=false, midiHeld=false;
     std::atomic<bool> restartRequested { false };
-    std::atomic<int> playingStep { -1 };
-    juce::Random random;
+    std::atomic<int> playingStep { -1 }, auditionRequested { -1 };
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Acid303AudioProcessor)
 };
